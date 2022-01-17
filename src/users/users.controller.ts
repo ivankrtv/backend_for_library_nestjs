@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { BooksService } from 'src/books/books.service';
 import { userDto } from './user.dto';
 import { UsersService } from './users.service';
 
@@ -28,7 +29,7 @@ export class UsersController {
     }
 
     @Put(':id')
-    async addSubscribe(@Param('id') id: number){
+    addSubscribe(@Param('id') id: number){
         return this.userService.addSubscription(id); 
     }
 
@@ -36,4 +37,15 @@ export class UsersController {
     updateUser(@Param('id') id: number, @Body() updateUser: userDto){
         return this.userService.updateUser(id, updateUser);
     }
+
+    //Методы выдачи и возврата книги
+    // @Post('/takebook')
+    // getBook(@Body() ids){
+    //     //return this.userService.getBook(ids);
+    // }
+
+    // @Post('returnBook')
+    // returnBook(@Body() ids: takeBook){
+    //     return this.userService.returnBook(ids);
+    // }
 }

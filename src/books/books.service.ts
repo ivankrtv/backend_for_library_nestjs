@@ -10,7 +10,11 @@ export class BooksService {
     constructor(@InjectRepository(Book) private bookRepository: Repository<Book>) {}
 
     async addBook(bookDto: bookDto): Promise<Book> {
-        const book = await this.bookRepository.create(bookDto);
-        return this.bookRepository.save(book);
+        const book = this.bookRepository.create(bookDto);
+        return await this.bookRepository.save(book);
+    }
+
+    async getBook(id: number){
+        return await this.bookRepository.findOne({id: id});
     }
 }

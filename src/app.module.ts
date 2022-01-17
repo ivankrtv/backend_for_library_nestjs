@@ -4,6 +4,8 @@ import { User } from 'models/user.entity';
 import { UsersModule } from './users/users.module';
 import { BooksModule } from './books/books.module';
 import { Book } from 'models/book.entity';
+import { AppController } from './app.controller';
+import { AppService } from './app.service';
 
 @Module({
   imports: [
@@ -19,7 +21,9 @@ import { Book } from 'models/book.entity';
       autoLoadEntities: true,
     }),
     UsersModule,
-    BooksModule,
+    BooksModule
   ],
+  controllers: [AppController],
+  providers: [AppService]
 })
 export class AppModule {}
