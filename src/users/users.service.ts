@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'models/user.entity';
 import { BooksService } from 'src/books/books.service';
@@ -32,9 +32,9 @@ export class UsersService {
         await this.userRepository.delete(id);
     }
 
-    async addSubscription(id: number): Promise<string>{
+    async addSubscription(id: number){
         if( (await this.userRepository.findOne(id)).isHasSubscription == true ) 
-            return "User already has sebscribe"; 
+            throw new HttpException('User already is subscribe', 400); 
         if( (await this.userRepository
             .createQueryBuilder()
             .update(User)
@@ -44,18 +44,26 @@ export class UsersService {
             .where({
                 id
             })
-            .execute()).affected !== 0) return "Success";
-        else return "Database error";
+            .execute()).affected !== 0) throw new HttpException('Success', 200);
+        else 
+            throw new HttpException('Database error', 500);
     }
 
-    async updateUser(id:number, updateUser: userDto): Promise<string>{
-        if( (await this.userRepository.update(id, updateUser)).affected !== 0 ) return "Update success";
-        else return "Update failed!";
+    async updateUser(id:number, updateUser: userDto){
+        if( (await this.userRepository.update(id, updateUser)).affected !== 0 ) 
+            throw new HttpException('Success update', 200);
+        else throw new HttpException('Update failed!', 500);
     }
 
     // Вспомогательная функция сохранения в БД
-    async saveUser(newUser: User): Promise<User>{
-        return await this.userRepository.save(newUser)
+    async saveUser(newUser: User): Promise<boolean>{
+        try{
+            await this.userRepository.save(newUser);
+            return true;
+        }
+        catch(exception){
+            return false;
+        }
     }
 
 }

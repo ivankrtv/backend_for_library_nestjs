@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, Injectable } from "@nestjs/common";
 import { BooksService } from "./books/books.service";
 import { takeBookDto } from "./book-operations.dto";
 import { UsersService } from "./users/users.service";
@@ -12,26 +12,44 @@ export class AppService {
 
 
     async takeBook(ids: takeBookDto){
-        const usr = await this.userService.getUser(ids.user_id); // получаем пользователя, которому добавляем книгу
-        //Проверяем сколько книг у пользователя и есть ли у него абонемент
-        if ( usr.isHasSubscription === false ) return "User hasn'n subscribe";
-        if ( usr.books.length >= 5 ) return "User already has 5 books";
+        // получаем пользователя, которому добавляем книгу
+        const usr = await this.userService.getUser(ids.user_id);
 
-        const book = await this.bookService.getBook(ids.book_id); // получаем книгу, которую хотим добавить
+        // проверяем сколько книг у пользователя и есть ли у него абонемент
+        if ( usr.isHasSubscription === false )
+            throw new HttpException("User hasn't subscription", 400);
+        if ( usr.books.length >= 5 ) 
+            throw new HttpException("User already has 5 books", 400);
+
+        // получаем книгу, которую хотим добавить
+        const book = await this.bookService.getBook(ids.book_id); 
+
+        // Проверяем не "занята" ли эта книга
+        if ( book.user !== null )
+            throw new HttpException("Book is with another user at this time", 400);
+
         usr.addBook(book);
-        if( (await this.userService.saveUser(usr)) === usr) return "Book has been added success";
-        else return "Adding failed!";
-    }
+        if( !(await this.userService.saveUser(usr)) ) 
+            throw new HttpException("Added failed!", 500);
+
+        throw new HttpException("Book added success", 200);
+}
 
     async returnBook(ids: takeBookDto): Promise<string>{
-        const usr = await this.userService.getUser(ids.user_id); // получаем пользователя, у которого убираем книгу
-        // Если у пользователя уже нет книг, то просто выходим их функции
-        if( usr.books.length < 1 ) return "User hasn't a books"; 
+        // получаем пользователя, у которого убираем книгу
+        const usr = await this.userService.getUser(ids.user_id); 
 
-        const book = await this.bookService.getBook(ids.book_id); // получаем книгу, которую хотим убрать
+        // Если у пользователя уже нет книг, то просто выходим их функции
+        if( usr.books.length < 1 )
+            throw new HttpException("User hasn't a books", 400); 
+
+        // Получаем книгу, которую хотим убрать
+        const book = await this.bookService.getBook(ids.book_id); 
+
         //Удаляем книгу из массива книг пользователя
-        if( (usr.removeBook(book)) && (await this.userService.saveUser(usr) === usr)) 
-            return "Book has been returned success";
-        else return "Return failed!";
+        if( (usr.removeBook(book)) && (await this.userService.saveUser(usr))) 
+            throw new HttpException("Book returned success", 200);
+        else 
+            throw new HttpException("Return failed!", 500);
     }
 }
