@@ -7,7 +7,7 @@ import { Book } from 'models/book.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
+    TypeOrmModule.forRoot({ 
       type: 'mysql',
       host: 'localhost',
       port: 3306,
